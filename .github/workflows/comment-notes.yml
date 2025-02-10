@@ -1,0 +1,23 @@
+on:
+  pull_request:
+    types: [ closed ]
+
+jobs:
+  comment-notes:
+    runs-on: ubuntu-latest
+    name: "Append Pull Request notes as comment on the merged commit"
+    if: github.event.pull_request.merged == true
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      # To use this repository's private action,
+      # you must check out the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: fregante/setup-git-user@v2
+      - name: Commit notes
+        id: hello
+        uses: ./ # Uses an action in the root directory
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
