@@ -13,6 +13,12 @@ export default defineConfig({
       reportOnFailure: true,
       reportsDirectory: './logs/coverage',
       include: ['src/'],
+      thresholds: {
+        lines: 100,
+        branches: 100,
+        functions: 100,
+        statements: 100
+      }
     },
   },
 })
