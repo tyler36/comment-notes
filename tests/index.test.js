@@ -90,4 +90,24 @@ describe("GitHub Action - PR Git Notes", () => {
     expect(setFailedMock).toHaveBeenCalledWith("Could not determine merge commit SHA.");
   });
 
+  it("adds a git note with PR comments", async () => {
+    const infoMock = vi.spyOn(core, "info");
+
+    mockPullsResponse.mockImplementationOnce(() => ({ data:  {merge_commit_sha: 'FAKE-SHA'} }));
+    mockListCommentsResponse.mockImplementationOnce(() => ({ data: [
+      {
+        body: 'lorem ipsum dolor sit amet',
+        user: {
+          login: 'user47'
+        }
+      }
+    ] }));
+
+    await run();
+
+    expect(execSync).toHaveBeenCalledWith("git fetch origin FAKE-SHA");
+    expect(execSync).toHaveBeenCalledWith(expect.stringContaining("git notes add FAKE-SHA -m \"- user47: lorem ipsum dolor sit amet\""));
+    expect(execSync).toHaveBeenCalledWith("git push origin \"refs/notes/*\"");
+    expect(infoMock).toHaveBeenCalledWith("Git note added successfully.");
+  });
 });
