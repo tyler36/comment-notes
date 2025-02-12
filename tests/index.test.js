@@ -110,4 +110,13 @@ describe("GitHub Action - PR Git Notes", () => {
     expect(execSync).toHaveBeenCalledWith("git push origin \"refs/notes/*\"");
     expect(infoMock).toHaveBeenCalledWith("Git note added successfully.");
   });
+
+  it( 'captures errors', async () => {
+    const setFailedMock = vi.spyOn(core, "setFailed");
+    mockListCommentsResponse.mockImplementationOnce(() => ({}));
+
+    await run();
+
+    expect(setFailedMock).toHaveBeenCalledWith("Cannot read properties of undefined (reading 'length')");
+  } );
 });
