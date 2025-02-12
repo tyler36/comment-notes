@@ -40,7 +40,7 @@ export async function run() {
       repo,
       pull_number,
     });
-    const commitSHA = pr.merge_commit_sha;
+    const commitSHA = pr?.merge_commit_sha;
 
     if (!commitSHA) {
       core.setFailed("Could not determine merge commit SHA.");
@@ -58,4 +58,7 @@ export async function run() {
   }
 }
 
-run()
+/* v8 ignore next 3 */
+if (!process.env.VITEST_WORKER_ID) {
+  run()
+}

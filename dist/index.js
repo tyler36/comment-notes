@@ -31821,75 +31821,121 @@ module.exports = parseParams
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__nccwpck_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__nccwpck_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__nccwpck_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-const core = __nccwpck_require__(7484);
-const github = __nccwpck_require__(3228);
-const { execSync } = __nccwpck_require__(5317);
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+(() => {
+"use strict";
+__nccwpck_require__.r(__webpack_exports__);
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   run: () => (/* binding */ run)
+/* harmony export */ });
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(7484);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(3228);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var child_process__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(5317);
+/* harmony import */ var child_process__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(child_process__WEBPACK_IMPORTED_MODULE_2__);
+
+
 
 async function run() {
-  try {
-    const token = core.getInput("github-token");
-    const octokit = github.getOctokit(token);
-    const context = github.context;
-
-    if (!context.payload.pull_request) {
-      core.setFailed("This action must be triggered by a pull request.");
-      return;
+    try {
+        const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github-token');
+        const octokit = _actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit(token);
+        const context = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context;
+        // This action should only run on pull requests.
+        if (!context.payload.pull_request) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('This action must be triggered by a pull request.');
+            return;
+        }
+        // Get information about the repository.
+        const owner = context.repo.owner;
+        const repo = context.repo.repo;
+        const pull_number = context.payload.pull_request.number;
+        // Fetch PR comments
+        const { data: comments } = await octokit.rest.issues.listComments({
+            owner,
+            repo,
+            issue_number: pull_number,
+        });
+        // If there are no comments, there is no need to add a git note.
+        if (comments.length === 0) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info("No comments to add as a git note.");
+            return;
+        }
+        const noteContent = comments.map(comment => `- ${comment.user?.login}: ${comment.body}`).join("\n");
+        // Get the commit SHA of the PR merge
+        const { data: pr } = await octokit.rest.pulls.get({
+            owner,
+            repo,
+            pull_number,
+        });
+        const commitSHA = pr?.merge_commit_sha;
+        if (!commitSHA) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed("Could not determine merge commit SHA.");
+            return;
+        }
+        // Add the note
+        (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git fetch origin ${commitSHA}`);
+        (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git notes add ${commitSHA} -m "${noteContent}"`);
+        (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git push origin "refs/notes/*"`);
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info("Git note added successfully.");
     }
-
-    const owner = context.repo.owner;
-    const repo = context.repo.repo;
-    const pull_number = context.payload.pull_request.number;
-  // Get the JSON webhook payload for the event that triggered the workflow
-  const payload = JSON.stringify(github.context.payload, undefined, 2)
-  // console.log(`The event payload: ${payload}`);
-
-    // Fetch PR comments
-    const { data: comments } = await octokit.rest.issues.listComments({
-      owner,
-      repo,
-      issue_number: pull_number,
-    });
-    console.log(comments);
-
-    if (comments.length === 0) {
-      core.info("No comments to add as a git note.");
-      return;
+    catch (error) {
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
     }
-
-    const noteContent = comments.map(comment => `- ${comment.user.login}: ${comment.body}`).join("\n");
-
-    // Get the commit SHA of the PR merge
-    const { data: pr } = await octokit.rest.pulls.get({
-      owner,
-      repo,
-      pull_number,
-    });
-    const commitSHA = pr.merge_commit_sha;
-
-    if (!commitSHA) {
-      core.setFailed("Could not determine merge commit SHA.");
-      return;
-    }
-
-    // Add the note
-    execSync(`git fetch origin ${commitSHA}`);
-    execSync(`git notes add ${commitSHA} -m "${noteContent}"`);
-    console.log(`git notes add ${commitSHA} -m "${noteContent}"`)
-    execSync(`git push origin "refs/notes/*"`);
-
-    core.info("Git note added successfully.");
-  } catch (error) {
-    core.setFailed(error.message);
-  }
+}
+/* v8 ignore next 3 */
+if (!process.env.VITEST_WORKER_ID) {
+    run();
 }
 
-run();
+})();
 
 module.exports = __webpack_exports__;
 /******/ })()
