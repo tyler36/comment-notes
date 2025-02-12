@@ -10,7 +10,7 @@
     "target": "esnext"
   },
   "exclude": [
-    "./__tests__",
+    "./tests",
     "./coverage",
     "./dist",
     "**/*.test.ts",
