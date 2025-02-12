@@ -6,6 +6,8 @@ import * as github from '@actions/github';
 import pullRequestPayload from "./payloads/pull_request.ts";
 
 const mockPayload = vi.hoisted(() => vi.fn())
+const mockListCommentsResponse = vi.hoisted(() => vi.fn())
+const mockPullsResponse = vi.hoisted(() => vi.fn())
 
 vi.mock("child_process", () => ({
   execSync: vi.fn(),
@@ -33,6 +35,16 @@ describe("GitHub Action - PR Git Notes", () => {
     })
 
     github.context = pullRequestPayload
+    github.getOctokit.mockReturnValue({
+      rest: {
+        issues: {
+          listComments: mockListCommentsResponse,
+        },
+        pulls: {
+          get: mockPullsResponse,
+        }
+      },
+    });
   });
 
   afterEach(() => {
@@ -48,19 +60,12 @@ describe("GitHub Action - PR Git Notes", () => {
       expect(setFailedMock).toHaveBeenCalledWith("This action must be triggered by a pull request.");
     });
 
+
   it("does not add a git note if there are no comments", async () => {
     const infoMock = vi.spyOn(core, "info");
 
-    // Mock the Octokit instance
-    const mockListComments = vi.fn().mockImplementation(() => ({ data: [] }));
-    const mockOctokit = {
-      rest: {
-        issues: {
-          listComments: mockListComments,
-        },
-      },
-    };
-    github.getOctokit.mockReturnValueOnce(mockOctokit);
+    // Mock the ListComments response.
+    mockListCommentsResponse.mockImplementationOnce(() => ({ data: [] }));
 
     await run();
 
@@ -70,24 +75,15 @@ describe("GitHub Action - PR Git Notes", () => {
   it("fails if merge commit SHA cannot be determined", async () => {
     const setFailedMock = vi.spyOn(core, "setFailed");
 
-    // Mock the Octokit instance
-    const mockListComments = vi.fn().mockImplementation(() => ({ data: [
+    mockPullsResponse.mockImplementationOnce(() => ({ data:  { } }));
+    mockListCommentsResponse.mockImplementationOnce(() => ({ data: [
       {
-        'user': 'dave',
+        body: 'lorem ipsum dolor sit amet',
+        user: {
+          login: 'user47'
+        }
       }
     ] }));
-    const mockPulls = vi.fn().mockImplementation(() => ({ data: {pr: {}}}));
-    const mockOctokit = {
-      rest: {
-        issues: {
-          listComments: mockListComments,
-        },
-        pulls: {
-          get: mockPulls,
-        }
-      },
-    };
-    github.getOctokit.mockReturnValueOnce(mockOctokit);
 
     await run();
 
