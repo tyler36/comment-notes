@@ -1,11 +1,11 @@
 on:
   pull_request:
-    types: [ closed ]
+    types: [closed]
 
 jobs:
   comment-notes:
     runs-on: ubuntu-latest
-    name: "Append Pull Request notes as comment on the merged commit"
+    name: 'Append Pull Request notes as comment on the merged commit'
     if: github.event.pull_request.merged == true
     permissions:
       contents: write
