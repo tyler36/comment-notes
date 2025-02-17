@@ -31905,10 +31905,12 @@ async function run() {
         });
         // If there are no comments, there is no need to add a git note.
         if (comments.length === 0) {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info("No comments to add as a git note.");
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('No comments to add as a git note.');
             return;
         }
-        const noteContent = comments.map(comment => `- ${comment.user?.login}: ${comment.body}`).join("\n");
+        const noteContent = comments
+            .map((comment) => `- ${comment.user?.login}: ${comment.body}`)
+            .join('\n');
         // Get the commit SHA of the PR merge
         const { data: pr } = await octokit.rest.pulls.get({
             owner,
@@ -31917,14 +31919,15 @@ async function run() {
         });
         const commitSHA = pr?.merge_commit_sha;
         if (!commitSHA) {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed("Could not determine merge commit SHA.");
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed('Could not determine merge commit SHA.');
             return;
         }
         // Add the note
+        (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git fetch origin "refs/notes/*:refs/notes/*"`);
         (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git fetch origin ${commitSHA}`);
         (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git notes add ${commitSHA} -m "${noteContent}"`);
         (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git push origin "refs/notes/*"`);
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info("Git note added successfully.");
+        _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Git note added successfully.');
     }
     catch (error) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);

@@ -50,6 +50,7 @@ export async function run() {
     }
 
     // Add the note
+    execSync(`git fetch origin "refs/notes/*:refs/notes/*"`)
     execSync(`git fetch origin ${commitSHA}`)
     execSync(`git notes add ${commitSHA} -m "${noteContent}"`)
     execSync(`git push origin "refs/notes/*"`)
