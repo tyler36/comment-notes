@@ -1,7 +1,8 @@
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'comment-notes'
+description: 'Save PR comments as git-notes in merged PRs'
 inputs:
-  github-token: # id of input
+  github-token:
+    description: Automatically injected token used to update commit.
     required: true
 runs:
   using: 'node20'
