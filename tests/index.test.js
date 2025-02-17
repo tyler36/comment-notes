@@ -1,19 +1,10 @@
-import {
-  describe,
-  it,
-  expect,
-  vi,
-  beforeEach,
-  afterEach,
-  resetAllMocks,
-} from 'vitest'
-import { run } from '../src/index'
-import { execSync } from 'child_process'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { execSync } from 'child_process'
 import pullRequestPayload from './payloads/pull_request.ts'
+import { run } from '../src/index'
 
-const mockPayload = vi.hoisted(() => vi.fn())
 const mockListCommentsResponse = vi.hoisted(() => vi.fn())
 const mockPullsResponse = vi.hoisted(() => vi.fn())
 
