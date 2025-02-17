@@ -4,6 +4,15 @@ inputs:
   github-token:
     description: Automatically injected token used to update commit.
     required: true
+  comment-template:
+    description: 'Template used for each comment.'
+    default: |
+      ----------------------------
+      $comment.user.login:
+
+      $comment.body
+
+    required: true
 runs:
   using: 'node20'
   main: 'dist/index.js'

@@ -28,7 +28,9 @@ vi.mock('@octokit/rest')
 describe('GitHub Action - PR Git Notes', () => {
   beforeEach(() => {
     core.getInput.mockImplementation((name) => {
-      const lookup = {}
+      const lookup = {
+        'comment-template': `FAKE-comment-template`,
+      }
 
       return lookup[name] || `FAKE-${name}`
     })
@@ -119,15 +121,84 @@ describe('GitHub Action - PR Git Notes', () => {
     expect(execSync).toHaveBeenCalledWith('git fetch origin FAKE-SHA')
     expect(execSync).toHaveBeenCalledWith(
       expect.stringContaining(
-        `git notes add FAKE-SHA -m "----------------------------
-user47:
-lorem ipsum dolor sit amet
-
-"`,
+        `git notes add FAKE-SHA -m "FAKE-comment-template"`,
       ),
     )
     expect(execSync).toHaveBeenCalledWith('git push origin "refs/notes/*"')
     expect(infoMock).toHaveBeenCalledWith('Git note added successfully.')
+  })
+
+  it('configs notes template via input', async () => {
+    core.getInput.mockImplementation((name) => {
+      const lookup = {
+        'comment-template': '- $comment.user.login: $comment.body',
+      }
+
+      return lookup[name] || `FAKE-${name}`
+    })
+
+    mockPullsResponse.mockImplementationOnce(() => ({
+      data: { merge_commit_sha: 'FAKE-SHA' },
+    }))
+    mockListCommentsResponse.mockImplementationOnce(() => ({
+      data: [
+        {
+          body: 'lorem ipsum dolor sit amet',
+          user: {
+            login: 'user47',
+          },
+        },
+        {
+          body: 'Suscipit, cupiditate.',
+          user: {
+            login: 'user27',
+          },
+        },
+      ],
+    }))
+
+    await run()
+
+    expect(execSync).toHaveBeenCalledWith(
+      'git fetch origin "refs/notes/*:refs/notes/*"',
+    )
+    expect(execSync).toHaveBeenCalledWith('git fetch origin FAKE-SHA')
+    expect(execSync).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `git notes add FAKE-SHA -m "- user47: lorem ipsum dolor sit amet
+- user27: Suscipit, cupiditate."`,
+      ),
+    )
+  })
+
+  it('notes template fall back to empty string if key does not exist', async () => {
+    core.getInput.mockImplementation((name) => {
+      const lookup = {
+        'comment-template': '- $comment.user.login $comment.invalid',
+      }
+
+      return lookup[name] || `FAKE-${name}`
+    })
+
+    mockPullsResponse.mockImplementationOnce(() => ({
+      data: { merge_commit_sha: 'FAKE-SHA' },
+    }))
+    mockListCommentsResponse.mockImplementationOnce(() => ({
+      data: [
+        {
+          body: 'lorem ipsum dolor sit amet',
+          user: {
+            login: 'user47',
+          },
+        },
+      ],
+    }))
+
+    await run()
+
+    expect(execSync).toHaveBeenCalledWith(
+      expect.stringContaining(`git notes add FAKE-SHA -m "- user47"`),
+    )
   })
 
   it('captures errors', async () => {

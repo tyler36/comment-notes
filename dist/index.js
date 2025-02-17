@@ -31886,6 +31886,7 @@ __nccwpck_require__.r(__webpack_exports__);
 async function run() {
     try {
         const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github-token');
+        const template = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('comment-template');
         const octokit = _actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit(token);
         const context = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context;
         // This action should only run on pull requests.
@@ -31909,11 +31910,12 @@ async function run() {
             return;
         }
         const noteContent = comments
-            .map((comment) => `----------------------------
-${comment.user?.login}:
-${comment.body}
-
-`)
+            .map((comment) => {
+            const result = template.replace(/\$([a-zA-Z0-9_.]+)/g, (_, path) => {
+                return path.split('.').reduce((obj, key) => obj?.[key], { comment }) ?? '';
+            });
+            return result.trim();
+        })
             .join('\n');
         // Get the commit SHA of the PR merge
         const { data: pr } = await octokit.rest.pulls.get({
