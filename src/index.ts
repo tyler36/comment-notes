@@ -33,7 +33,11 @@ export async function run() {
     }
 
     const noteContent = comments
-      .map((comment) => `- ${comment.user?.login}: ${comment.body}`)
+      .map((comment) => `----------------------------
+${comment.user?.login}:
+${comment.body}
+
+`)
       .join('\n')
 
     // Get the commit SHA of the PR merge

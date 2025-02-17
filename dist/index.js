@@ -31909,7 +31909,11 @@ async function run() {
             return;
         }
         const noteContent = comments
-            .map((comment) => `- ${comment.user?.login}: ${comment.body}`)
+            .map((comment) => `----------------------------
+${comment.user?.login}:
+${comment.body}
+
+`)
             .join('\n');
         // Get the commit SHA of the PR merge
         const { data: pr } = await octokit.rest.pulls.get({

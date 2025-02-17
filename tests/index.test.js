@@ -119,7 +119,11 @@ describe('GitHub Action - PR Git Notes', () => {
     expect(execSync).toHaveBeenCalledWith('git fetch origin FAKE-SHA')
     expect(execSync).toHaveBeenCalledWith(
       expect.stringContaining(
-        'git notes add FAKE-SHA -m "- user47: lorem ipsum dolor sit amet"',
+        `git notes add FAKE-SHA -m "----------------------------
+user47:
+lorem ipsum dolor sit amet
+
+"`,
       ),
     )
     expect(execSync).toHaveBeenCalledWith('git push origin "refs/notes/*"')
