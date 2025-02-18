@@ -12,8 +12,8 @@ import { WebhookPayload } from '@actions/github/lib/interfaces'
 const sanitizeString = (input: string) => {
   let output = input
 
-  output
-    .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+  output = output
+    .replace(/[\x1F\x7F]/g, '') // Remove control characters
     .replace(/`/g, '\\`') // Escape backticks
     .replace(/\${/g, '\\${') // Escape template interpolation
 
