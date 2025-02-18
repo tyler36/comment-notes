@@ -20,43 +20,67 @@ Git notes never really "caught on". Many website, like GitHub, do not display "g
 
 1. Add a `.github/workflows/comment-notes.yml` as below.
 
-    ```yml
-    on:
-      pull_request:
-        types: [closed]
+   ```yml
+   on:
+     pull_request:
+       types: [closed]
 
-    jobs:
-      comment-notes:
-        runs-on: ubuntu-latest
-        name: 'comment-notes'
-        if: github.event.pull_request.merged == true
-        permissions:
-          contents: write
-          pull-requests: read
-        steps:
-            # Private repositories must use checkout action.
-          - name: Checkout
-            uses: actions/checkout@v4
+   jobs:
+     comment-notes:
+       runs-on: ubuntu-latest
+       name: 'comment-notes'
+       if: github.event.pull_request.merged == true
+       permissions:
+         contents: write
+         pull-requests: read
+       steps:
+         # Private repositories must use checkout action.
+         - name: Checkout
+           uses: actions/checkout@v4
 
-          - uses: fregante/setup-git-user@v2
+         - uses: fregante/setup-git-user@v2
 
-          - name: Commit notes
-            id: commit-notes
-            uses: tyler36/backlog-linker
-            with:
-              github-token: ${{ secrets.GITHUB_TOKEN }}
-    ```
+         - name: Commit notes
+           id: commit-notes
+           uses: tyler36/backlog-linker
+           with:
+             github-token: ${{ secrets.GITHUB_TOKEN }}
+   ```
 
-    This action runs when a PR is closed.
-    It reads the PR comments, and appends them as a git note.
+   This action runs when a PR is closed.
+   It reads the PR comments, and appends them as a git note.
 
 2. Update your git remote to fetch the notes.
 
-    ```shell
-    git config --add remote.origin.fetch '+refs/notes/*:refs/notes/*'
-    ```
+   ```shell
+   git config --add remote.origin.fetch '+refs/notes/*:refs/notes/*'
+   ```
 
 3. Run `git log` to see the notes.
+
+### Templates
+
+To override, the default comment template, update your workflow action:
+
+```yml
+with:
+  github-token: ${{ secrets.GITHUB_TOKEN }}
+  comment-template: '- $comment.user.login: $comment.body'
+```
+
+The workflow will attempt to replace `$comment` items with the values from the comment object.
+For example, given the following comment object
+
+```js
+{
+  body: 'This works great!'
+  user: {
+    login: 'Dave'
+  }
+}
+```
+
+... `- $comment.user.login: $comment.body` template would become `- Dave: This works great!`.
 
 ## Contributions
 

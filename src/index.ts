@@ -1,10 +1,12 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { execSync } from 'child_process'
+import { WebhookPayload } from '@actions/github/lib/interfaces'
 
 export async function run() {
   try {
     const token = core.getInput('github-token')
+    const template = core.getInput('comment-template')
     const octokit = github.getOctokit(token)
     const context = github.context
 
@@ -33,7 +35,19 @@ export async function run() {
     }
 
     const noteContent = comments
-      .map((comment) => `- ${comment.user?.login}: ${comment.body}`)
+      .map((comment) => {
+        const result = template.replace(/\$([a-zA-Z0-9_.]+)/g, (_, path) => {
+          return (
+            path
+              .split('.')
+              .reduce((obj: WebhookPayload, key: string) => obj?.[key], {
+                comment,
+              }) ?? ''
+          )
+        })
+
+        return result.trim()
+      })
       .join('\n')
 
     // Get the commit SHA of the PR merge
