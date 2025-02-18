@@ -221,8 +221,11 @@ describe('GitHub Action - PR Git Notes', () => {
 
     await run()
 
+    // Double quotes should be escaped
+    const body = data.body.replace(/"/g, '\\"')
+
     expect(execSync).toHaveBeenCalledWith(
-      `git notes add FAKE-SHA -m "- user47: ${data.body}"`,
+      `git notes add FAKE-SHA -m "- user47: ${body}"`,
     )
     expect(setFailedMock).toBeCalledTimes(0)
   })
@@ -264,7 +267,7 @@ describe('GitHub Action - PR Git Notes', () => {
     expect(execSync).toHaveBeenCalledWith('git fetch origin FAKE-SHA')
     expect(execSync).toHaveBeenCalledWith(
       `git notes add FAKE-SHA -m "- user47: Inline code block \\\`v05\\\`
-- user47: \\\`\\\`\\\`javascript\nconsole.log("hello")\\\`\\\`\\\`"`,
+- user47: \\\`\\\`\\\`javascript\nconsole.log(\\"hello\\")\\\`\\\`\\\`"`,
     )
   })
 

@@ -14,6 +14,7 @@ const sanitizeString = (input: string) => {
 
   output = output
     .replace(/[\x1F\x7F]/g, '') // Remove control characters
+    .replace(/"/g, '\\"') // Escape double quotes
     .replace(/`/g, '\\`') // Escape backticks
     .replace(/\${/g, '\\${') // Escape template interpolation
 
