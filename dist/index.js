@@ -31883,6 +31883,20 @@ __nccwpck_require__.r(__webpack_exports__);
 
 
 
+/**
+ * Clean up the comment string
+ *
+ * @param input
+ * @returns
+ */
+const sanitizeString = (input) => {
+    let output = input;
+    output
+        .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+        .replace(/`/g, '\\`') // Escape backticks
+        .replace(/\${/g, '\\${'); // Escape template interpolation
+    return output.trim();
+};
 async function run() {
     try {
         const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github-token');
@@ -31912,9 +31926,13 @@ async function run() {
         const noteContent = comments
             .map((comment) => {
             const result = template.replace(/\$([a-zA-Z0-9_.]+)/g, (_, path) => {
-                return path.split('.').reduce((obj, key) => obj?.[key], { comment }) ?? '';
+                return (path
+                    .split('.')
+                    .reduce((obj, key) => obj?.[key], {
+                    comment,
+                }) ?? '');
             });
-            return result.trim();
+            return sanitizeString(result);
         })
             .join('\n');
         // Get the commit SHA of the PR merge

@@ -201,6 +201,39 @@ describe('GitHub Action - PR Git Notes', () => {
     )
   })
 
+  it.each(dataProvider_comments())(`Notes Case: $id`, async (data) => {
+    const setFailedMock = vi.spyOn(core, 'setFailed')
+    core.getInput.mockImplementation((name) => {
+      const lookup = {
+        'comment-template': '- $comment.user.login: $comment.body',
+      }
+
+      return lookup[name] || `FAKE-${name}`
+    })
+    mockPullsResponse.mockImplementationOnce(() => ({
+      data: { merge_commit_sha: 'FAKE-SHA' },
+    }))
+    mockListCommentsResponse.mockImplementationOnce(() => ({
+      data: [
+        {
+          body: data.body,
+          user: {
+            login: 'user47',
+          },
+        },
+      ],
+    }))
+
+    await run()
+
+    expect(execSync).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `git notes add FAKE-SHA -m "- user47: ${data.body}"`,
+      ),
+    )
+    expect(setFailedMock).toBeCalledTimes(0)
+  })
+
   it('captures errors', async () => {
     const setFailedMock = vi.spyOn(core, 'setFailed')
     mockListCommentsResponse.mockImplementationOnce(() => ({}))
@@ -212,3 +245,53 @@ describe('GitHub Action - PR Git Notes', () => {
     )
   })
 })
+
+function dataProvider_comments() {
+  return [
+    {
+      id: 'simple string',
+      body: 'Hello world',
+    },
+    {
+      id: 'Mixed alpha-numeric.',
+      body: 'ThiS is A mix of numb3rs and cASEs',
+    },
+    {
+      id: 'Emojis',
+      body: '😊 With emojis',
+    },
+    {
+      id: 'Mutli-line comment',
+      body: `This is a
+multiline comment.`,
+    },
+    {
+      id: 'Markdown link',
+      body: 'Include an [link](https://google.com)',
+    },
+    {
+      id: 'Double quotes',
+      body: 'Check "double quotes"',
+    },
+    {
+      id: 'Single quotes',
+      body: "Check 'single quotes'",
+    },
+    {
+      id: 'Backtick block',
+      body: 'Inline code block `v05`',
+    },
+    {
+      id: 'Codeblock',
+      body: "Here is a code example:\n\n```javascript\nconsole.log('Hello, world!');\n```",
+    },
+    {
+      id: 'Japanese mix',
+      body: 'お疲れ様です。',
+    },
+    {
+      id: 'Japanese mix with unicode',
+      body: '(✿✪‿✪｡)ﾉｺﾝﾁｬ♡',
+    },
+  ]
+}
