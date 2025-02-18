@@ -234,6 +234,47 @@ describe('GitHub Action - PR Git Notes', () => {
     expect(setFailedMock).toBeCalledTimes(0)
   })
 
+  it('replaces code blocks', async () => {
+    core.getInput.mockImplementation((name) => {
+      const lookup = {
+        'comment-template': '- $comment.user.login: $comment.body',
+      }
+
+      return lookup[name] || `FAKE-${name}`
+    })
+
+    mockPullsResponse.mockImplementationOnce(() => ({
+      data: { merge_commit_sha: 'FAKE-SHA' },
+    }))
+    mockListCommentsResponse.mockImplementationOnce(() => ({
+      data: [
+        {
+          body: 'Inline code block `v05`',
+          user: {
+            login: 'user47',
+          },
+        },
+        {
+          body: '```javascript\nconsole.log("hello")```',
+          user: {
+            login: 'user47',
+          },
+        },
+      ],
+    }))
+
+    await run()
+
+    expect(execSync).toHaveBeenCalledWith(
+      'git fetch origin "refs/notes/*:refs/notes/*"',
+    )
+    expect(execSync).toHaveBeenCalledWith('git fetch origin FAKE-SHA')
+    expect(execSync).toHaveBeenCalledWith(
+      `git notes add FAKE-SHA -m "- user47: Inline code block \\\`v05\\\`
+- user47: \\\`\\\`\\\`javascript\nconsole.log("hello")\\\`\\\`\\\`"`,
+    )
+  })
+
   it('captures errors', async () => {
     const setFailedMock = vi.spyOn(core, 'setFailed')
     mockListCommentsResponse.mockImplementationOnce(() => ({}))
@@ -276,14 +317,6 @@ multiline comment.`,
     {
       id: 'Single quotes',
       body: "Check 'single quotes'",
-    },
-    {
-      id: 'Backtick block',
-      body: 'Inline code block `v05`',
-    },
-    {
-      id: 'Codeblock',
-      body: "Here is a code example:\n\n```javascript\nconsole.log('Hello, world!');\n```",
     },
     {
       id: 'Japanese mix',
