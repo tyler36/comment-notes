@@ -5,7 +5,7 @@ on:
 jobs:
   comment-notes:
     runs-on: ubuntu-latest
-    name: 'Append Pull Request notes as comment on the merged commit'
+    name: 'comment-notes'
     if: github.event.pull_request.merged == true
     permissions:
       contents: write
@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
       - uses: fregante/setup-git-user@v2
       - name: Commit notes
-        id: hello
+        id: commit-notes
         uses: ./ # Uses an action in the root directory
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
