@@ -3,6 +3,24 @@ import * as github from '@actions/github'
 import { execSync } from 'child_process'
 import { WebhookPayload } from '@actions/github/lib/interfaces'
 
+/**
+ * Clean up the comment string
+ *
+ * @param input
+ * @returns
+ */
+const sanitizeString = (input: string) => {
+  let output = input
+
+  output = output
+    .replace(/[\x1F\x7F]/g, '') // Remove control characters
+    .replace(/"/g, '\\"') // Escape double quotes
+    .replace(/`/g, '\\`') // Escape backticks
+    .replace(/\${/g, '\\${') // Escape template interpolation
+
+  return output.trim()
+}
+
 export async function run() {
   try {
     const token = core.getInput('github-token')
@@ -46,7 +64,7 @@ export async function run() {
           )
         })
 
-        return result.trim()
+        return sanitizeString(result)
       })
       .join('\n')
 
