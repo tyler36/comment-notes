@@ -120,9 +120,7 @@ describe('GitHub Action - PR Git Notes', () => {
     )
     expect(execSync).toHaveBeenCalledWith('git fetch origin FAKE-SHA')
     expect(execSync).toHaveBeenCalledWith(
-      expect.stringContaining(
-        `git notes add FAKE-SHA -m "FAKE-comment-template"`,
-      ),
+      `git notes add FAKE-SHA -m "FAKE-comment-template"`,
     )
     expect(execSync).toHaveBeenCalledWith('git push origin "refs/notes/*"')
     expect(infoMock).toHaveBeenCalledWith('Git note added successfully.')
@@ -163,12 +161,9 @@ describe('GitHub Action - PR Git Notes', () => {
       'git fetch origin "refs/notes/*:refs/notes/*"',
     )
     expect(execSync).toHaveBeenCalledWith('git fetch origin FAKE-SHA')
-    expect(execSync).toHaveBeenCalledWith(
-      expect.stringContaining(
-        `git notes add FAKE-SHA -m "- user47: lorem ipsum dolor sit amet
-- user27: Suscipit, cupiditate."`,
-      ),
-    )
+    expect(execSync)
+      .toHaveBeenCalledWith(`git notes add FAKE-SHA -m "- user47: lorem ipsum dolor sit amet
+- user27: Suscipit, cupiditate."`)
   })
 
   it('notes template fall back to empty string if key does not exist', async () => {
@@ -197,7 +192,7 @@ describe('GitHub Action - PR Git Notes', () => {
     await run()
 
     expect(execSync).toHaveBeenCalledWith(
-      expect.stringContaining(`git notes add FAKE-SHA -m "- user47"`),
+      `git notes add FAKE-SHA -m "- user47"`,
     )
   })
 
@@ -227,9 +222,7 @@ describe('GitHub Action - PR Git Notes', () => {
     await run()
 
     expect(execSync).toHaveBeenCalledWith(
-      expect.stringContaining(
-        `git notes add FAKE-SHA -m "- user47: ${data.body}"`,
-      ),
+      `git notes add FAKE-SHA -m "- user47: ${data.body}"`,
     )
     expect(setFailedMock).toBeCalledTimes(0)
   })
