@@ -271,6 +271,49 @@ describe('GitHub Action - PR Git Notes', () => {
     )
   })
 
+  it('ignores authors via configuration', async () => {
+    core.getInput.mockImplementation((name) => {
+      const lookup = {
+        'comment-template': '- $comment.user.login: $comment.body',
+        'ignore-authors': 'dependabot',
+      }
+
+      return lookup[name] || `FAKE-${name}`
+    })
+    mockPullsResponse.mockImplementationOnce(() => ({
+      data: { merge_commit_sha: 'FAKE-SHA' },
+    }))
+    mockListCommentsResponse.mockImplementationOnce(() => ({
+      data: [
+        {
+          body: 'lorem ipsum dolor sit amet',
+          user: {
+            login: 'user47',
+          },
+        },
+        {
+          body: 'Suscipit, cupiditate.',
+          user: {
+            login: 'dependabot',
+          },
+        },
+        {
+          body: 'Suscipit, cupiditate.',
+          user: {
+            login: 'user27',
+          },
+        },
+      ],
+    }))
+
+    await run()
+
+    expect(execSync).toHaveBeenCalledWith(
+      `git notes add FAKE-SHA -m "- user47: lorem ipsum dolor sit amet
+- user27: Suscipit, cupiditate."`,
+    )
+  })
+
   it('captures errors', async () => {
     const setFailedMock = vi.spyOn(core, 'setFailed')
     mockListCommentsResponse.mockImplementationOnce(() => ({}))

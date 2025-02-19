@@ -13,6 +13,10 @@ inputs:
       $comment.body
 
     required: true
+  ignore-authors:
+    description: A comma-separated string of authors NOT to include.
+    default: ''
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'

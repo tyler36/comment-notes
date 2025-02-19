@@ -82,6 +82,18 @@ For example, given the following comment object
 
 ... `- $comment.user.login: $comment.body` template would become `- Dave: This works great!`.
 
+### Ignore Authors
+
+If you would like to ignore certain author comments, like a bot or spammer, add the following configuration.
+
+```yml
+with:
+  github-token: ${{ secrets.GITHUB_TOKEN }}
+  ignore-authors: 'spammer123,dependabot[bot]'
+```
+
+The `ignore-authors` string is split on comma, and matched against the comment's `author.login` string.
+
 ## Contributions
 
 Contributions are welcome. Contributions with tests will be prioritized.
