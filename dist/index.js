@@ -31902,6 +31902,7 @@ async function run() {
     try {
         const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github-token');
         const template = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('comment-template');
+        const ignoreAuthors = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('ignore-authors').split(',');
         const octokit = _actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit(token);
         const context = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context;
         // This action should only run on pull requests.
@@ -31926,6 +31927,11 @@ async function run() {
         }
         const noteContent = comments
             .map((comment) => {
+            // Check if the author is in the "ignore" list.
+            const commentAuthor = comment?.user?.login;
+            if (commentAuthor && ignoreAuthors.includes(commentAuthor)) {
+                return;
+            }
             const result = template.replace(/\$([a-zA-Z0-9_.]+)/g, (_, path) => {
                 return (path
                     .split('.')
@@ -31935,6 +31941,11 @@ async function run() {
             });
             return sanitizeString(result);
         })
+            // Filter out empty items.
+            .map((comment) => comment === undefined || comment === null || comment === ''
+            ? undefined
+            : comment)
+            .filter(Boolean)
             .join('\n');
         // Get the commit SHA of the PR merge
         const { data: pr } = await octokit.rest.pulls.get({
