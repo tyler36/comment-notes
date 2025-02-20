@@ -1,0 +1,14 @@
+----------------------------
+github-actions[bot]:
+
+<h2>Coverage Report</h2>
+<table> <thead> <tr> <th align="center">Status</th> <th align="left">Category</th> <th align="right">Percentage</th> <th align="right">Covered / Total</th> </tr> </thead> <tbody> <tr> <td align="center">🟢</td> <td align="left">Lines</td> <td align="right">100% (🎯 100%)</td> <td align="right">77 / 77</td> </tr> <tr> <td align="center">🟢</td> <td align="left">Statements</td> <td align="right">100% (🎯 100%)</td> <td align="right">77 / 77</td> </tr> <tr> <td align="center">🟢</td> <td align="left">Functions</td> <td align="right">100% (🎯 100%)</td> <td align="right">3 / 3</td> </tr> <tr> <td align="center">🟢</td> <td align="left">Branches</td> <td align="right">100% (🎯 100%)</td> <td align="right">21 / 21</td> </tr> </tbody> </table><details><summary>File Coverage</summary>No changed files found.</details>
+<em>Generated in workflow <a href=https://github.com/tyler36/comment-notes/actions/runs/13427529310>#22</a> for commit <a href="https://github.com/tyler36/comment-notes/commit/33aa0241023ddcd3cf9eaae488c37ffe806f0d1a">33aa024</a> by the <a href="https://github.com/davelosert/vitest-coverage-report-action">Vitest Coverage Report Action</a></em>
+
+<!-- vitest-coverage-report-marker-root -->
+----------------------------
+tyler36:
+
+Tests pass.
+
+Confirmed warning nolonger appears in workflow.
