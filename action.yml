@@ -17,6 +17,10 @@ inputs:
     description: A comma-separated string of authors NOT to include.
     default: ''
     required: false
+  ref:
+    description: The namespace used to store the notes.
+    default: ''
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'

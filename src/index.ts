@@ -26,6 +26,7 @@ export async function run() {
     const token = core.getInput('github-token')
     const template = core.getInput('comment-template')
     const ignoreAuthors = core.getInput('ignore-authors').split(',')
+    const ref = core.getInput('ref')
     const octokit = github.getOctokit(token)
     const context = github.context
 
@@ -98,7 +99,9 @@ export async function run() {
     // Add the note
     execSync(`git fetch origin "refs/notes/*:refs/notes/*"`)
     execSync(`git fetch origin ${commitSHA}`)
-    execSync(`git notes add ${commitSHA} -m "${noteContent}"`)
+
+    const noteTree = !!ref ? `--ref="${ref}"` : ''
+    execSync(`git notes ${noteTree} add ${commitSHA} -m "${noteContent}"`)
     execSync(`git push origin "refs/notes/*"`)
 
     core.info('Git note added successfully.')

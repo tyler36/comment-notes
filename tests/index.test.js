@@ -24,16 +24,13 @@ vi.mock('@actions/github', () => ({
 }))
 
 vi.mock('@octokit/rest')
+const lookup = {
+  ref: 'pr_comments',
+}
 
 describe('GitHub Action - PR Git Notes', () => {
   beforeEach(() => {
-    core.getInput.mockImplementation((name) => {
-      const lookup = {
-        'comment-template': `FAKE-comment-template`,
-      }
-
-      return lookup[name] || `FAKE-${name}`
-    })
+    core.getInput.mockImplementation((name) => lookup[name] || `FAKE-${name}`)
 
     github.context = pullRequestPayload
     github.getOctokit.mockReturnValue({
@@ -311,6 +308,30 @@ describe('GitHub Action - PR Git Notes', () => {
     expect(execSync).toHaveBeenCalledWith(
       `git notes add FAKE-SHA -m "- user47: lorem ipsum dolor sit amet
 - user27: Suscipit, cupiditate."`,
+    )
+  })
+
+  it.only('allows notes reference to be configured', async () => {
+    core.getInput.mockImplementation((name) => lookup[name] || `FAKE-${name}`)
+
+    mockPullsResponse.mockImplementationOnce(() => ({
+      data: { merge_commit_sha: 'FAKE-SHA' },
+    }))
+    mockListCommentsResponse.mockImplementationOnce(() => ({
+      data: [
+        {
+          body: 'lorem ipsum dolor sit amet',
+          user: {
+            login: 'user47',
+          },
+        },
+      ],
+    }))
+
+    await run()
+
+    expect(execSync).toHaveBeenCalledWith(
+      `git notes --ref="pr_comments" add FAKE-SHA -m "FAKE-comment-template"`,
     )
   })
 
