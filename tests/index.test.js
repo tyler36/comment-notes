@@ -24,13 +24,21 @@ vi.mock('@actions/github', () => ({
 }))
 
 vi.mock('@octokit/rest')
-const lookup = {
-  ref: 'pr_comments',
+
+const GitHubInput = {
+  ref: '',
 }
 
 describe('GitHub Action - PR Git Notes', () => {
   beforeEach(() => {
-    core.getInput.mockImplementation((name) => lookup[name] || `FAKE-${name}`)
+    GitHubInput['comment-template'] = ''
+    GitHubInput['ignore-author'] = ''
+    GitHubInput['ref'] = ''
+    core.getInput.mockImplementation((name) => {
+      if (name === 'ref' && GitHubInput[name] === '') return ''
+
+      return GitHubInput[name] || `FAKE-${name}`
+    })
 
     github.context = pullRequestPayload
     github.getOctokit.mockReturnValue({
@@ -124,13 +132,7 @@ describe('GitHub Action - PR Git Notes', () => {
   })
 
   it('configs notes template via input', async () => {
-    core.getInput.mockImplementation((name) => {
-      const lookup = {
-        'comment-template': '- $comment.user.login: $comment.body',
-      }
-
-      return lookup[name] || `FAKE-${name}`
-    })
+    GitHubInput['comment-template'] = '- $comment.user.login: $comment.body'
 
     mockPullsResponse.mockImplementationOnce(() => ({
       data: { merge_commit_sha: 'FAKE-SHA' },
@@ -164,13 +166,7 @@ describe('GitHub Action - PR Git Notes', () => {
   })
 
   it('notes template fall back to empty string if key does not exist', async () => {
-    core.getInput.mockImplementation((name) => {
-      const lookup = {
-        'comment-template': '- $comment.user.login $comment.invalid',
-      }
-
-      return lookup[name] || `FAKE-${name}`
-    })
+    GitHubInput['comment-template'] = '- $comment.user.login $comment.invalid'
 
     mockPullsResponse.mockImplementationOnce(() => ({
       data: { merge_commit_sha: 'FAKE-SHA' },
@@ -194,14 +190,10 @@ describe('GitHub Action - PR Git Notes', () => {
   })
 
   it.each(dataProvider_comments())(`Notes Case: $id`, async (data) => {
-    const setFailedMock = vi.spyOn(core, 'setFailed')
-    core.getInput.mockImplementation((name) => {
-      const lookup = {
-        'comment-template': '- $comment.user.login: $comment.body',
-      }
+    GitHubInput['comment-template'] = '- $comment.user.login: $comment.body'
 
-      return lookup[name] || `FAKE-${name}`
-    })
+    const setFailedMock = vi.spyOn(core, 'setFailed')
+
     mockPullsResponse.mockImplementationOnce(() => ({
       data: { merge_commit_sha: 'FAKE-SHA' },
     }))
@@ -228,13 +220,7 @@ describe('GitHub Action - PR Git Notes', () => {
   })
 
   it('replaces code blocks', async () => {
-    core.getInput.mockImplementation((name) => {
-      const lookup = {
-        'comment-template': '- $comment.user.login: $comment.body',
-      }
-
-      return lookup[name] || `FAKE-${name}`
-    })
+    GitHubInput['comment-template'] = '- $comment.user.login: $comment.body'
 
     mockPullsResponse.mockImplementationOnce(() => ({
       data: { merge_commit_sha: 'FAKE-SHA' },
@@ -269,14 +255,9 @@ describe('GitHub Action - PR Git Notes', () => {
   })
 
   it('ignores authors via configuration', async () => {
-    core.getInput.mockImplementation((name) => {
-      const lookup = {
-        'comment-template': '- $comment.user.login: $comment.body',
-        'ignore-authors': 'dependabot',
-      }
+    GitHubInput['comment-template'] = '- $comment.user.login: $comment.body'
+    GitHubInput['ignore-authors'] = 'dependabot'
 
-      return lookup[name] || `FAKE-${name}`
-    })
     mockPullsResponse.mockImplementationOnce(() => ({
       data: { merge_commit_sha: 'FAKE-SHA' },
     }))
@@ -311,8 +292,8 @@ describe('GitHub Action - PR Git Notes', () => {
     )
   })
 
-  it.only('allows notes reference to be configured', async () => {
-    core.getInput.mockImplementation((name) => lookup[name] || `FAKE-${name}`)
+  it('allows notes reference to be configured', async () => {
+    GitHubInput['ref'] = 'pr_comments'
 
     mockPullsResponse.mockImplementationOnce(() => ({
       data: { merge_commit_sha: 'FAKE-SHA' },

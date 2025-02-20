@@ -100,8 +100,8 @@ export async function run() {
     execSync(`git fetch origin "refs/notes/*:refs/notes/*"`)
     execSync(`git fetch origin ${commitSHA}`)
 
-    const noteTree = !!ref ? `--ref="${ref}"` : ''
-    execSync(`git notes ${noteTree} add ${commitSHA} -m "${noteContent}"`)
+    const noteTree = !!ref ? ` --ref="${ref}" ` : ' '
+    execSync(`git notes${noteTree}add ${commitSHA} -m "${noteContent}"`)
     execSync(`git push origin "refs/notes/*"`)
 
     core.info('Git note added successfully.')

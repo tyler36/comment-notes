@@ -31743,6 +31743,7 @@ async function run() {
         const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('github-token');
         const template = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('comment-template');
         const ignoreAuthors = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('ignore-authors').split(',');
+        const ref = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('ref');
         const octokit = _actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit(token);
         const context = _actions_github__WEBPACK_IMPORTED_MODULE_1__.context;
         // This action should only run on pull requests.
@@ -31801,7 +31802,8 @@ async function run() {
         // Add the note
         (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git fetch origin "refs/notes/*:refs/notes/*"`);
         (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git fetch origin ${commitSHA}`);
-        (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git notes add ${commitSHA} -m "${noteContent}"`);
+        const noteTree = !!ref ? ` --ref="${ref}" ` : ' ';
+        (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git notes${noteTree}add ${commitSHA} -m "${noteContent}"`);
         (0,child_process__WEBPACK_IMPORTED_MODULE_2__.execSync)(`git push origin "refs/notes/*"`);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.info('Git note added successfully.');
     }
