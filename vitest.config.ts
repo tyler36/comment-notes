@@ -9,7 +9,7 @@ export default defineConfig({
     },
     coverage: {
       // 'json-summary' is required for Github action
-      reporter: ['html','json', 'json-summary'],
+      reporter: ['html', 'json', 'json-summary'],
       reportOnFailure: true,
       reportsDirectory: './logs/coverage',
       include: ['src/'],
