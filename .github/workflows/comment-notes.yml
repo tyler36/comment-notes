@@ -21,3 +21,4 @@ jobs:
         uses: ./ # Uses an action in the root directory
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: 'pr_comments'
